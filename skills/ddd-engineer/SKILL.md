@@ -1,5 +1,5 @@
 ---
-name: hasko-ddd-engineer
+name: ddd-engineer
 description: Implement, refactor, review, and document software using practical Domain-Driven Design, SOLID, explicit application boundaries, value objects, tests, and public-contract discipline.
 ---
 

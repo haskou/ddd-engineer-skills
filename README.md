@@ -11,24 +11,27 @@ semantics.
 
 ## Skills
 
-- `hasko-ddd-engineer`: DDD, SOLID, boundaries, value objects, aggregates,
+- `ddd-engineer`: DDD, SOLID, boundaries, value objects, aggregates,
   contracts, tests, naming, PR handoff, and review discipline.
 - `haskou-value-objects`: TypeScript value-object usage, serialization,
   equality, primitive boundaries, and domain behavior discipline.
+- `ddd-migration`: Incremental DDD migration planning and execution with
+  durable migration state, target architecture, coherent slices, and staged
+  validation.
 
 ## Install
 
 Ask Codex to install the skills from this repository:
 
 ```text
-Install the skills from github.com/haskou/ddd-engineer-skill
+Install the skills from github.com/haskou/ddd-engineer-skills
 ```
 
 ## Repository Layout
 
 ```text
 skills/
-  hasko-ddd-engineer/
+  ddd-engineer/
     SKILL.md
     references/
       aggregates.md
@@ -43,6 +46,22 @@ skills/
       value-objects.md
   haskou-value-objects/
     SKILL.md
+  ddd-migration/
+    SKILL.md
+    references/
+      context-management.md
+      discovery.md
+      implementation-checklist.md
+      migration-state-template.md
+      roadmap.md
+      target-architecture.md
+    scripts/
+      find-empty-dirs.sh
+      init-migration-state.sh
+      read-migration-state.sh
+      scan-migration-seams.sh
+      snapshot-structure.sh
+      suggest-affected-checks.sh
 ```
 
 ## Updating
