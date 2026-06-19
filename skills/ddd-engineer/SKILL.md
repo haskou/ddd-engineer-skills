@@ -162,6 +162,8 @@ This is an execution skill, not a theoretical DDD checklist. Read the existing c
 ## Infrastructure and boundaries
 
 - Persistence models, API DTOs, OpenAPI schemas, pub/sub payloads, websocket payloads, and external SDK payloads must stay out of the domain.
+- Infrastructure must not contain business logic or domain decisions. Repositories, adapters, mappers, controllers, consumers, and SDK clients move data across boundaries; they do not decide permissions, lifecycle transitions, invariants, eligibility, pricing, status changes, or ownership rules.
+- If infrastructure code needs a business decision to persist, map, publish, or call an external service, move that decision into the aggregate, entity, value object, policy, domain service, or application use case and pass infrastructure only the result.
 - Repositories hydrate and serialize aggregates. They may call serialization methods; domain code should not need to.
 - API routes/controllers should be thin: parse request, build boundary message, call use case, return resource.
 - Resource/mapper classes are responsible for presentation shape, not domain decisions.
