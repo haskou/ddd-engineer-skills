@@ -32,6 +32,7 @@ This is an execution skill, not a theoretical DDD checklist. Read the existing c
 
 - Work in the language the user uses.
 - Prefer a small complete slice over broad half-finished architecture.
+- Apply YAGNI as a hard rule. Do not add abstractions, methods, parameters, helpers, folders, or extension points until a real current use case requires them.
 - Do not revert user changes. If the worktree is dirty, inspect it and keep unrelated edits intact.
 - Make incremental commits when a coherent slice is finished, following the repository's commit convention.
 - Treat PR comments as actionable engineering feedback unless they are clearly informational.
@@ -64,6 +65,8 @@ This is an execution skill, not a theoretical DDD checklist. Read the existing c
 - Constructors should express the domain model. If a constructor grows unwieldy, introduce a cohesive domain concept or factory only when it removes real complexity.
 - A domain constructor with many parameters is a smell, but a generic `props` bag is not the automatic fix. Prefer naming the missing concept: metadata, scope, payload, permissions, participants, window, period, etc.
 - Aggregates should expose intent-revealing behavior. Prefer `message.markAsDeleted(byIdentity)` or `community.canManageChannels(identity)` over external code mutating fields or comparing raw ids.
+- Aggregate roots must not expose public assertion methods. Public `assertCan...`, `assertIs...`, or `assertHas...` methods on an aggregate root are a design smell; assertions are internal guards, not part of the aggregate's public language.
+- If an aggregate collects too many private assertion helpers, extract a cohesive validation class, policy, or domain service named by the concept. For example, move admin checks into `UserValidator.assertIsAdmin(userId)`, and keep `isAdmin(userId)` there too when a boolean question is needed.
 - Do not create an anemic domain model wrapped by procedural services.
 - Do not use casts in domain or application code unless there is no sane alternative.
 - Do not introduce magic strings. Put named domain values behind value objects, constants, or existing enum-style domain values.
@@ -73,6 +76,7 @@ This is an execution skill, not a theoretical DDD checklist. Read the existing c
 ## Encapsulation, getters, and setters
 
 - Do not add getters or setters to domain/application objects just to make tests easier or to let callers inspect internals.
+- Do not add any production method whose only consumer is a test. Tests must exercise real public behavior, persisted state, emitted events, or boundary serialization; they must not force test-only APIs into the model.
 - Public getters are allowed only when they expose a genuine boundary value or a stable domain concept that callers are meant to know. They are not a license to pull primitives out and make decisions elsewhere.
 - If a method is a getter, name it with a `get` prefix. Use `getAddress()` instead of `address()` when the method only returns the address.
 - If a method is a setter, name it with a `set` prefix. Use `setAddress(address)` instead of `address(address)` when the method only replaces the address.
