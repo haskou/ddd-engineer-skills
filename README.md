@@ -30,6 +30,7 @@ Install the skills from github.com/haskou/ddd-engineer-skills
 ## Repository Layout
 
 ```text
+AGENTS.md
 skills/
   ddd-engineer/
     SKILL.md
@@ -66,9 +67,10 @@ skills/
 
 ## Updating
 
-1. Edit the relevant `skills/<skill-name>/SKILL.md` for core behavior.
-2. Put detailed topic guidance under that skill's `references/` directory when
+1. Read `AGENTS.md` before changing this repository.
+2. Edit the relevant `skills/<skill-name>/SKILL.md` for core behavior.
+3. Put detailed topic guidance under that skill's `references/` directory when
    the skill needs deeper progressive-disclosure material.
-3. Keep the skill generic. Do not add project-specific aliases, tools, reviewer
+4. Keep the skill generic. Do not add project-specific aliases, tools, reviewer
    names, Jira rules, or repository-specific commands.
-4. Copy or reinstall the skill in projects that should consume the update.
+5. Copy or reinstall the skill in projects that should consume the update.
