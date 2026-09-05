@@ -1,5 +1,15 @@
 import { createHash } from 'node:crypto';
-import { access, cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  access,
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 
 export const MANIFEST_FILE = '.ddd-engineer-skills.json';
@@ -55,7 +65,10 @@ async function hashDirectory(root) {
 
   for (const file of files) {
     const relative = path.relative(root, file).split(path.sep).join('/');
+    const executable = ((await stat(file)).mode & 0o111) !== 0;
     hash.update(relative);
+    hash.update('\0');
+    hash.update(executable ? 'x' : '-');
     hash.update('\0');
     hash.update(await readFile(file));
     hash.update('\0');
@@ -86,17 +99,80 @@ async function readManifest(targetRoot) {
 
 async function writeManifest(targetRoot, manifest) {
   await mkdir(targetRoot, { recursive: true });
-  await writeFile(
-    path.join(targetRoot, MANIFEST_FILE),
-    `${JSON.stringify(manifest, null, 2)}\n`,
-    'utf8',
-  );
+  const manifestPath = path.join(targetRoot, MANIFEST_FILE);
+  const temporaryPath = `${manifestPath}.tmp`;
+
+  await writeFile(temporaryPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  await rename(temporaryPath, manifestPath);
 }
 
-async function copySkill(source, destination) {
-  await rm(destination, { recursive: true, force: true });
+function replacementPaths(destination) {
+  const parent = path.dirname(destination);
+  const name = path.basename(destination);
+  return {
+    stage: path.join(parent, `.${name}.ddd-engineer-skills-stage`),
+    backup: path.join(parent, `.${name}.ddd-engineer-skills-backup`),
+  };
+}
+
+async function recoverInterruptedReplacement(destination) {
+  const { stage, backup } = replacementPaths(destination);
+  const destinationExists = await exists(destination);
+  const backupExists = await exists(backup);
+
+  if (!destinationExists && backupExists) {
+    await rename(backup, destination);
+  } else if (destinationExists && backupExists) {
+    await rm(backup, { recursive: true, force: true });
+  }
+
+  await rm(stage, { recursive: true, force: true });
+}
+
+async function stageSkill(source, destination) {
   await mkdir(path.dirname(destination), { recursive: true });
-  await cp(source, destination, { recursive: true });
+  const { stage, backup } = replacementPaths(destination);
+  await rm(stage, { recursive: true, force: true });
+  await cp(source, stage, { recursive: true });
+  return { destination, stage, backup, hadPrevious: false };
+}
+
+async function commitStagedSkill(replacement) {
+  if (await exists(replacement.destination)) {
+    await rm(replacement.backup, { recursive: true, force: true });
+    await rename(replacement.destination, replacement.backup);
+    replacement.hadPrevious = true;
+  }
+
+  try {
+    await rename(replacement.stage, replacement.destination);
+  } catch (error) {
+    if (replacement.hadPrevious && !await exists(replacement.destination) && await exists(replacement.backup)) {
+      await rename(replacement.backup, replacement.destination);
+      replacement.hadPrevious = false;
+    }
+    throw error;
+  }
+}
+
+async function rollbackReplacement(replacement) {
+  await rm(replacement.stage, { recursive: true, force: true });
+
+  if (replacement.hadPrevious && await exists(replacement.backup)) {
+    await rm(replacement.destination, { recursive: true, force: true });
+    await rename(replacement.backup, replacement.destination);
+    replacement.hadPrevious = false;
+    return;
+  }
+
+  if (!replacement.hadPrevious) {
+    await rm(replacement.destination, { recursive: true, force: true });
+  }
+}
+
+async function finalizeReplacement(replacement) {
+  await rm(replacement.stage, { recursive: true, force: true });
+  await rm(replacement.backup, { recursive: true, force: true });
 }
 
 function validateMode(mode) {
@@ -142,6 +218,8 @@ export async function installSkills({
   for (const name of selected) {
     const source = path.join(sourceRoot, name);
     const destination = path.join(targetRoot, name);
+    await recoverInterruptedReplacement(destination);
+
     const sourceHash = await hashDirectory(source);
     const destinationExists = await exists(destination);
     const currentHash = destinationExists ? await hashDirectory(destination) : null;
@@ -187,13 +265,36 @@ export async function installSkills({
     });
   }
 
-  for (const plan of plans) {
-    if (plan.copy) {
-      await copySkill(plan.source, plan.destination);
+  const replacements = [];
+  try {
+    for (const plan of plans) {
+      if (plan.copy) {
+        replacements.push({ plan, replacement: await stageSkill(plan.source, plan.destination) });
+      }
     }
-    manifest.skills[plan.name] = { hash: plan.sourceHash, version: packageVersion };
+
+    for (const { replacement } of replacements) {
+      await commitStagedSkill(replacement);
+    }
+
+    for (const plan of plans) {
+      manifest.skills[plan.name] = { hash: plan.sourceHash, version: packageVersion };
+    }
+    await writeManifest(targetRoot, manifest);
+  } catch (error) {
+    for (const { replacement } of [...replacements].reverse()) {
+      try {
+        await rollbackReplacement(replacement);
+      } catch {
+        // Preserve the original failure. Any backup left behind is recovered on the next run.
+      }
+    }
+    throw error;
   }
 
-  await writeManifest(targetRoot, manifest);
+  for (const { replacement } of replacements) {
+    await finalizeReplacement(replacement);
+  }
+
   return plans.map(({ name, status, destination }) => ({ name, status, destination }));
 }
