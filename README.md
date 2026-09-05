@@ -18,9 +18,53 @@ The skills can be used without mandatory runtime dependencies. Focused skills ac
 
 ## Install
 
-Use the skill installation mechanism supported by your agent or copy the desired skill directories into its compatible skills location.
+### npx
 
-For repository-local installation, prefer the portable path when supported:
+Until the package is published to the npm registry, run it directly from GitHub:
+
+```bash
+npx github:haskou/ddd-engineer-skills install
+```
+
+That installs every packaged skill into the repository-local portable path:
+
+```text
+.agents/skills/
+```
+
+Install only selected skills by naming them:
+
+```bash
+npx github:haskou/ddd-engineer-skills install ddd-engineer haskou-value-objects
+```
+
+Install globally into `~/.agents/skills/`:
+
+```bash
+npx github:haskou/ddd-engineer-skills install --global
+```
+
+Update skills previously managed by the installer:
+
+```bash
+npx github:haskou/ddd-engineer-skills update
+```
+
+The installer records content hashes in `.agents/skills/.ddd-engineer-skills.json`. If a managed skill has local changes, `update` refuses to overwrite it. Use `--force` only when those changes should be discarded:
+
+```bash
+npx github:haskou/ddd-engineer-skills update --force
+```
+
+Once `@haskou/ddd-engineer-skills` is published to npm, the same commands can use the shorter package name:
+
+```bash
+npx @haskou/ddd-engineer-skills install
+```
+
+### Manual installation
+
+You can still copy the desired skill directories into your agent's compatible skills location. For repository-local installation, prefer the portable path when supported:
 
 ```text
 .agents/skills/
@@ -43,6 +87,11 @@ Install the skills from github.com/haskou/ddd-engineer-skills
 
 ```text
 AGENTS.md
+bin/
+  ddd-engineer-skills.mjs
+src/
+  cli.mjs
+  installer.mjs
 skills/
   ddd-engineer/
     SKILL.md
@@ -101,4 +150,4 @@ skills/
 4. Keep portable instructions vendor-neutral; put optional product metadata under `agents/`.
 5. Keep `agents/openai.yaml` aligned with the corresponding `SKILL.md` when present.
 6. Keep generic skills free of project-local rules. Put reusable dependency-specific behavior in a focused skill when it applies across projects using that stack.
-7. Copy or reinstall the skill in projects that should consume the update.
+7. Reinstall or run the installer update command in projects that should consume the change.
