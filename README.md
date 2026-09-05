@@ -1,39 +1,53 @@
 # DDD Engineer Skills
 
-Reusable Codex skills for practical Domain-Driven Design work.
+Reusable Agent Skills for practical Domain-Driven Design and TypeScript engineering work.
 
-The skill is intentionally generic. Project-specific rules belong in each
-repository's `AGENTS.md`, not in this package.
+The portable contract is the skill itself: `SKILL.md` plus optional `references/`, `scripts/`, and `assets/`. Vendor-specific metadata lives under `agents/` and is optional; it must not be required to understand or execute a skill.
 
-It can be used without any mandatory runtime dependency, but it is recommended
-alongside `@haskou/value-objects` when a project wants first-class value object
-semantics.
+Project-specific rules belong in each consuming repository's instructions, not in this package. Reusable library-specific conventions may live in focused skills that trigger only when the dependency or pattern is present.
+
+The skills can be used without mandatory runtime dependencies. Focused skills activate only when their libraries or patterns are present, including `@haskou/value-objects`, `@haskou/flow`, and `@haskou/ddd-kernel` / `node-dependency-injection`.
 
 ## Skills
 
-- `ddd-engineer`: DDD, SOLID, boundaries, value objects, aggregates,
-  contracts, tests, naming, PR handoff, and review discipline.
-- `haskou-value-objects`: TypeScript value-object usage, serialization,
-  equality, primitive boundaries, and domain behavior discipline.
-- `ddd-migration`: Incremental DDD migration planning and execution with
-  durable migration state, target architecture, coherent slices, and staged
-  validation.
+- `ddd-engineer`: DDD, SOLID, boundaries, value objects, aggregates, contracts, tests, naming, PR handoff, and review discipline.
+- `ddd-migration`: Incremental DDD migration planning and execution with durable migration state, target architecture, coherent slices, and staged validation.
+- `haskou-ddd-kernel`: Dependency-injection conventions for projects using `@haskou/ddd-kernel`, `node-dependency-injection`, generated `services.yaml`, or class-based container resolution.
+- `haskou-flow`: TypeScript async coordination with `@haskou/flow`: concurrency, queues, rate limiting, timeouts, retries, cancellation, scheduling, and composition.
+- `haskou-value-objects`: TypeScript value-object usage, serialization, equality, primitive boundaries, and domain behavior discipline with `@haskou/value-objects`.
 
 ## Install
 
-Ask Codex to install the skills from this repository:
+Use the skill installation mechanism supported by your agent or copy the desired skill directories into its compatible skills location.
+
+For repository-local installation, prefer the portable path when supported:
+
+```text
+.agents/skills/
+  ddd-engineer/
+  ddd-migration/
+  haskou-ddd-kernel/
+  haskou-flow/
+  haskou-value-objects/
+```
+
+Some agents also support vendor-specific skill directories. Prefer one canonical copy rather than maintaining divergent copies of the same skill.
+
+For Codex, you can also ask it to install the skills from this repository:
 
 ```text
 Install the skills from github.com/haskou/ddd-engineer-skills
 ```
 
-## Repository Layout
+## Repository layout
 
 ```text
 AGENTS.md
 skills/
   ddd-engineer/
     SKILL.md
+    agents/
+      openai.yaml
     references/
       aggregates.md
       bounded-contexts.md
@@ -45,10 +59,10 @@ skills/
       pr-checklist.md
       repositories-transactions.md
       value-objects.md
-  haskou-value-objects/
-    SKILL.md
   ddd-migration/
     SKILL.md
+    agents/
+      openai.yaml
     references/
       context-management.md
       discovery.md
@@ -63,14 +77,28 @@ skills/
       scan-migration-seams.sh
       snapshot-structure.sh
       suggest-affected-checks.sh
+  haskou-ddd-kernel/
+    SKILL.md
+    agents/
+      openai.yaml
+  haskou-flow/
+    SKILL.md
+    agents/
+      openai.yaml
+    references/
+      api-reference.md
+  haskou-value-objects/
+    SKILL.md
+    agents/
+      openai.yaml
 ```
 
 ## Updating
 
 1. Read `AGENTS.md` before changing this repository.
-2. Edit the relevant `skills/<skill-name>/SKILL.md` for core behavior.
-3. Put detailed topic guidance under that skill's `references/` directory when
-   the skill needs deeper progressive-disclosure material.
-4. Keep the skill generic. Do not add project-specific aliases, tools, reviewer
-   names, Jira rules, or repository-specific commands.
-5. Copy or reinstall the skill in projects that should consume the update.
+2. Edit the relevant `skills/<skill-name>/SKILL.md` for core workflow and triggering behavior.
+3. Put detailed topic guidance under that skill's `references/` directory when progressive disclosure is appropriate.
+4. Keep portable instructions vendor-neutral; put optional product metadata under `agents/`.
+5. Keep `agents/openai.yaml` aligned with the corresponding `SKILL.md` when present.
+6. Keep generic skills free of project-local rules. Put reusable dependency-specific behavior in a focused skill when it applies across projects using that stack.
+7. Copy or reinstall the skill in projects that should consume the update.
