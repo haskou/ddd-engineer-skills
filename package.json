@@ -1,0 +1,30 @@
+{
+  "name": "@haskou/ddd-engineer-skills",
+  "version": "0.1.0",
+  "description": "Reusable Agent Skills for practical DDD and TypeScript engineering.",
+  "type": "module",
+  "bin": {
+    "ddd-engineer-skills": "./bin/ddd-engineer-skills.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haskou/ddd-engineer-skills.git"
+  }
+}
