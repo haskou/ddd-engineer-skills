@@ -141,11 +141,12 @@ Collections:
 - Use it for uniqueness by Value Object behavior instead of deduping with primitives.
 - Prefer `includes`, `push`, `remove`, `length`, and `toArray()` over hand-rolled array rituals.
 
-Hashes, media, and crypto:
+Hashes and media:
 
-- Use `MD5Hash`, `SHA256Hash`, `SHA512Hash`, `Media`, `KeyPair`, `EncryptedKeyPair`, `PrivateKey`, `EncryptedPrivateKey`, `PublicKey`, `Signature`, etc. when the domain actually needs those concepts.
-- Use `Hash.from(...)`, `toBase64()`, `Media.getBuffer()`, `Media.getSize()`, and `Media.getBase64()` at boundaries or crypto/media behavior points.
-- Do not leak crypto payload internals across the domain. Keep encryption/signing behavior on the relevant objects.
+- Use `MD5Hash`, `SHA256Hash`, `SHA512Hash`, and `Media` when the domain needs validated representations of those values.
+- Hash Value Objects represent and validate digest values; cryptographic digest computation does not belong to `@haskou/value-objects`.
+- Use `toBase64()`, `Media.getBuffer()`, `Media.getSize()`, and `Media.getBase64()` at serialization, media, or external-library boundaries.
+- Do not model encryption keys, signatures, encrypted payloads, KDFs, or cryptographic protocols as responsibilities of `@haskou/value-objects`. Use the project-specific cryptography package or infrastructure layer instead.
 
 Nullish behavior:
 
